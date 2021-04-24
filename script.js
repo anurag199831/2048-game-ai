@@ -1,12 +1,14 @@
 var gridCells = document.getElementsByClassName("grid-cell");
 var gridSize = 4;
-var maxScore = 2048;
+var maxScore = Infinity;
 var cells = [];
 var score = 0;
 var stat = 2;
 var stateChanged = false;
-var row = null;
-var col = null;
+var newRow = null;
+var newCol = null;
+const scores = [];
+var count = 0;
 
 var color = {
     0: "rgba(238, 228, 218, 0.35)",
@@ -37,8 +39,11 @@ function start() {
     generateNewValue(2);
     st.innerHTML = "GAME RUNNING";
     spn.innerHTML = score;
+    newRow = null;
+    newCol = null;
     display();
     id = setInterval(ai, 100);
+    // id = setInterval(multiAI, 100);
 }
 
 function generateNewValue(val) {
@@ -52,6 +57,8 @@ function generateNewValue(val) {
         col = Math.floor(Math.random() * gridSize);
     }
     mat[row][col] = val;
+    newRow = row;
+    newCol = col;
 }
 
 function display() {
@@ -66,6 +73,9 @@ function display() {
                 cells[i * gridSize + j].style.backgroundColor = color["256"];
             } else {
                 cells[i * gridSize + j].style.backgroundColor = color[mat[i][j]];
+            }
+            if (i === newRow && j === newCol) {
+                cells[i * gridSize + j].style.backgroundColor = "black";
             }
         }
     }
@@ -304,7 +314,7 @@ function maximize(currentMat, currentScore, depth) {
             continue;
         }
         const currentUtil = utility(childResult[0].slice(0), 4);
-        // alert(currentUtil);
+        // alert(currentUtil)
         const minResult = minimize(childResult[0].slice(0), childResult[2], depth - 1);
         if ((minResult[2] + childResult[2]) > tmp) {
             result = [childResult[0].slice(0), childResult[2], currentUtil];
@@ -343,7 +353,7 @@ function minimize(currentMat, currentScore, depth) {
 
 function ai() {
     // [mat, score, _] = maximize(mat.slice(0), score, 5);
-    const move = nextMove(mat, 4, score, 5);
+    const move = nextMove(mat, 4, score, 7);
     if (move !== null) {
         [mat, _, score] = callMove(move, mat.slice(0), score);
     }
@@ -359,15 +369,40 @@ function ai() {
     display();
 }
 
+function multiAI() {
+    // [mat, score, _] = maximize(mat.slice(0), score, 5);
+    const move = nextMove(mat, 4, score, 5);
+    if (move !== null) {
+        [mat, _, score] = callMove(move, mat.slice(0), score);
+    }
+    spn.innerHTML = score;
+    if (isGameOver(mat.slice(0))) {
+        st.innerHTML = "Game Over For AI";
+        spn.innerHTML = score;
+        console.log(id);
+        if (count < 10) {
+            count++;
+            scores.push(score);
+            start();
+        } else {
+            clearInterval(id);
+        }
+    } else {
+        generateNewValue();
+    }
+    display();
+}
 
 
 var spn = document.getElementById("test-span");
 var st = document.getElementById("status");
 start();
+alert(scores);
 
 var retry = document.getElementById("retry");
 retry.addEventListener('click', start);
 
+/*
 function nextMove(grid, gridSize, gridScore, depth = 5) {
     let score = null;
     let move = null;
@@ -377,7 +412,8 @@ function nextMove(grid, gridSize, gridScore, depth = 5) {
         if (newGrid[1] === false) {
             continue;
         }
-        const currentScore = maxPlay(newGrid, gridSize, depth - 1) + newGrid[2];
+        const currentUtil = utility(newGrid[0], gridSize);
+        const currentScore = maxPlay(newGrid, gridSize, depth - 1) + currentUtil + newGrid[2];
         if (currentScore > score) {
             score = currentScore;
             move = i;
@@ -439,7 +475,7 @@ function totalEmptyCells(grid, gridSize) {
     let emptyCells = 0;
     for (const row of grid) {
         for (const cell of row) {
-            emptyCells += cell !== 0 ? 1 : 0;
+            emptyCells += cell === 0 ? 1 : 0;
         }
     }
     return emptyCells;
@@ -452,7 +488,6 @@ function patternHeuristics(grid) {
     for (let idx = 0; idx < grid.length; idx++) {
         ret += grid[idx] * weights[idx];
     }
-    // alert("pattern : " + ret);
     return ret;
 }
 
@@ -497,6 +532,7 @@ function utility(grid, gridSize) {
     const pattern = patternHeuristics(grid.slice(0), gridSize);
     const cluster = clusterHeuristics(grid.slice(0), gridSize);
     const monotonic = monotonicHeuristics(grid.slice(0), gridSize);
-    return pattern - cluster + monotonic;
-    // return -1 * cluster;
+    // return pattern - cluster + monotonic;
+    return -1 * cluster;
 }
+*/
