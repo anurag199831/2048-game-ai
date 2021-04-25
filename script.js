@@ -67,7 +67,7 @@ function start() {
     // // scores.push({ time: 0, score: 0 });
     // moveTillNow = 0;
     // scores.push({ move: 0, score: 0 });
-    if (algorithm !== "Manual") {
+    if (algorithm !== "manual") {
         id = setInterval(ai, 100);
     }
     // id = setInterval(multiAI, 100);
