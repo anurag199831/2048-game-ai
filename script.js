@@ -45,6 +45,9 @@ function start() {
         alpha = -Infinity;
         beta = Infinity;
         algorithm = "miniMax"
+    } else {
+        alpha = null;
+        beta = null;
     }
     newMat = []
     for (let i = 0; i < gridSize; i++) {
@@ -411,6 +414,17 @@ function multiAI() {
         }
     }
     display();
+}
+
+function totalEmptyCells(grid, gridSize) {
+    let emptyCells = 0;
+    for (const row of grid) {
+        for (const cell of row) {
+            emptyCells += cell === 0 ? 1 : 0;
+        }
+    }
+    console.log(emptyCells);
+    return emptyCells;
 }
 
 function random() {
