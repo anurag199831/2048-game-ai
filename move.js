@@ -1,7 +1,7 @@
-function nextMove(grid, gridSize, gridScore, depth = 5) {
+function expectiMax(grid, gridSize, gridScore, depth = 5) {
     let score = null;
     let move = null;
-    depth = totalEmptyCells(grid, gridSize) > 4 ? 6 : depth;
+    // depth = totalEmptyCells(grid, gridSize) > 4 ? 6 : depth;
     for (let i = 0; i < 4; i++) {
         const newGrid = callMove(i, grid.slice(0), gridScore);
         if (newGrid[1] === false) {

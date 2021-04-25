@@ -12,6 +12,24 @@
             <span id="status"></span>
             <span id="test-span"></span>
         </div>
+        <div id="game-info">
+            <form>
+                <label for="depth">Depth</label>
+                <select id="depth" name="depth">
+                    <option value='3'>3</option>
+                    <option value='5'>5</option>
+                    <option value='7'>7</option>
+                </select>
+                <label for="algo">Algorithm</label>
+                <select id="algo" name="algorithm">
+                    <option value='miniMax'>minimax</option>
+                    <option value='miniMax_with_alpha_beta'>minimax with alpha-beta</option>
+                    <option value='expectiMax'>expectimax</option>
+                    <option value='random'>random</option>
+                </select>
+                <button id="start" type="button">Start</button>
+            </form>
+        </div>
         <div id="grid">
             <div class="grid-cell">
                 <span></span>
@@ -63,13 +81,17 @@
             </div>
             <div id="game-details">
                 <span id="game-result"></span>
-                <button id="retry">Try Again</button>
+                <!-- <button id="retry">Try Again</button> -->
             </div>
         </div>
     </div>
     <script src="script.js">
     </script>
     <script src="heuristic.js">
+    </script>
+    <script src="move.js">
+    </script>
+    <script src="minMax.js">
     </script>
 </body>
 

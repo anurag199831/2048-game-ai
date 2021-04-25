@@ -1,4 +1,4 @@
-function minMaxMove(grid, gridSize, gridScore, depth = 5, alpha = null, beta = null) {
+function miniMax(grid, gridSize, gridScore, depth = 5, alpha = null, beta = null) {
     let score = -Infinity;
     let move = null;
     depth = totalEmptyCells(grid, gridSize) > 4 ? 6 : depth;
@@ -19,10 +19,6 @@ function minMaxMove(grid, gridSize, gridScore, depth = 5, alpha = null, beta = n
                 return move;
             }
         }
-        // alpha = Math.max(alpha, score);
-        // if (beta <= alpha) {
-        //     return move;
-        // }
     }
     return move;
 }
@@ -30,7 +26,7 @@ function minMaxMove(grid, gridSize, gridScore, depth = 5, alpha = null, beta = n
 function maximize(grid, gridSize, d, alpha, beta) {
     if (d === 0) {
         if (grid[1] === false) {
-            return -10000;
+            return -Infinity;
         }
         return utility(grid[0], gridSize);
     }
@@ -41,7 +37,8 @@ function maximize(grid, gridSize, d, alpha, beta) {
         if (newGrid[1] === false) {
             continue;
         }
-        const currentScore = minimize(newGrid, gridSize, d - 1, alpha, beta) + newGrid[2];
+        const currentUtil = utility(newGrid[0], gridSize);
+        const currentScore = minimize(newGrid, gridSize, d - 1, alpha, beta) + currentUtil + newGrid[2];
         if (currentScore > score) {
             score = currentScore;
         }
@@ -58,7 +55,7 @@ function maximize(grid, gridSize, d, alpha, beta) {
 function minimize(grid, gridSize, d, alpha, beta) {
     if (d === 0) {
         if (grid[1] === false) {
-            return -10000;
+            return Infinity;
         }
         return utility(grid[0], 4);
     }
@@ -69,17 +66,19 @@ function minimize(grid, gridSize, d, alpha, beta) {
             if (grid[0][i][j] !== 0) {
                 continue;
             }
-            grid[0][i][j] = 2;
-            const currentUtil = utility(grid[0].slice(0), gridSize, alpha, beta);
-            const currentScore = maximize(grid, gridSize, d - 1) + currentUtil + grid[2];
-            if (currentScore < score) {
-                score = currentScore;
-            }
-            grid[0][i][j] = 0;
-            if (beta) {
-                beta = Math.min(beta, score);
-                if (beta <= alpha) {
-                    return score;
+            for (let val = 2; val <= 2; val *= 2) {
+                grid[0][i][j] = val;
+                const currentUtil = utility(grid[0].slice(0), gridSize, alpha, beta);
+                const currentScore = maximize(grid, gridSize, d - 1) + currentUtil + grid[2];
+                if (currentScore < score) {
+                    score = currentScore;
+                }
+                grid[0][i][j] = 0;
+                if (beta) {
+                    beta = Math.min(beta, score);
+                    if (beta <= alpha) {
+                        return score;
+                    }
                 }
             }
         }

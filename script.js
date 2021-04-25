@@ -7,8 +7,16 @@ var stat = 2;
 var stateChanged = false;
 var newRow = null;
 var newCol = null;
-const scores = [];
+var scores = [];
 var count = 0;
+var lastRecordedTime = 0;
+var startTime = 0;
+var moveTillNow = 0;
+var depth = null;
+var algorithm = null;
+var alpha = null;
+var beta = null;
+var id = null;
 
 var color = {
     0: "rgba(238, 228, 218, 0.35)",
@@ -26,9 +34,18 @@ var mat = [];
 for (let i = 0; i < gridCells.length; i++) {
     cells.push(gridCells[i]);
 }
-var id = null;
 
 function start() {
+    if (id !== null) {
+        clearInterval(id);
+    }
+    depth = document.getElementById("depth").value;
+    algorithm = document.getElementById("algo").value;
+    if (algorithm === "miniMax_with_alpha_beta") {
+        alpha = -Infinity;
+        beta = Infinity;
+        algorithm = "miniMax"
+    }
     newMat = []
     for (let i = 0; i < gridSize; i++) {
         newMat.push([0, 0, 0, 0]);
@@ -42,6 +59,11 @@ function start() {
     newRow = null;
     newCol = null;
     display();
+    // lastRecordedTime = new Date().getTime();
+    // startTime = lastRecordedTime;
+    // // scores.push({ time: 0, score: 0 });
+    // moveTillNow = 0;
+    // scores.push({ move: 0, score: 0 });
     id = setInterval(ai, 100);
     // id = setInterval(multiAI, 100);
 }
@@ -59,6 +81,37 @@ function generateNewValue(val) {
     mat[row][col] = val;
     newRow = row;
     newCol = col;
+}
+
+function generateValueByAdversary() {
+    let score = Infinity;
+    let row = -1;
+    let col = -1;
+    let val = null;
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            if (mat[i][j] !== 0) {
+                continue;
+            }
+            for (let v = 2; v <= 4; v *= 2) {
+                mat[i][j] = v;
+                const currentUtil = utility(mat, 4);
+                const currentScore = maximize([mat.slice(0), true, score], 4, 1) + currentUtil;
+                mat[i][j] = 0;
+                if (currentScore < score) {
+                    score = currentScore;
+                    row = i;
+                    col = j;
+                    val = v;
+                }
+            }
+        }
+    }
+    if (row !== -1) {
+        mat[row][col] = val;
+    } else {
+        generateNewValue(2);
+    }
 }
 
 function display() {
@@ -254,14 +307,7 @@ document.addEventListener('keydown', (event) => {
         [mat, status, score] = down(mat, score);
     }
     if (status) {
-        minimize(mat.slice(0), score, 6);
-        if (row == null || col == null || mat[row][col] != 0) {
-            generateNewValue(2);
-        } else {
-            console.log("row : " + row + ", col : " + col);
-            mat[row][col] = 2;
-        }
-
+        generateValueByAdversary();
     }
     spn.innerHTML = score;
     if (isGameOver(mat)) {
@@ -301,9 +347,7 @@ function callMove(val, currentMat, currentScore) {
 }
 
 function ai() {
-    // [mat, score, _] = maximize(mat.slice(0), score, 5);
-    // const move = nextMove(mat, 4, score, 7);
-    const move = minMaxMove(mat, 4, score);
+    const move = window[algorithm](mat, 4, score, depth, alpha, beta);
     if (move !== null) {
         [mat, _, score] = callMove(move, mat.slice(0), score);
     }
@@ -311,17 +355,40 @@ function ai() {
     if (isGameOver(mat.slice(0))) {
         st.innerHTML = "Game Over For AI";
         spn.innerHTML = score;
-        console.log(id);
+        // const currentTime = new Date().getTime();
+        // const diff = currentTime - startTime;
+        // scores.push({ time: diff, score: score });
+        // let time = scores.map(scores => scores.time);
+        // let scoreVal = scores.map(scores => scores.score);
+        // console.log(scoreVal);
+        // console.log(time);
+        // scores.push({ move: moveTillNow, score: score });
+        // let m = scores.map(scores => scores.move);
+        // let s = scores.map(scores => scores.score);
+        // console.log(s);
+        // console.log(m);
         clearInterval(id);
     } else {
-        generateNewValue();
+        if (totalEmptyCells(mat, 4) !== 0) {
+            generateNewValue();
+        }
+        // generateValueByAdversary();
     }
+    // const currentTime = new Date().getTime();
+    // if (currentTime - lastRecordedTime >= 10000) {
+    //     lastRecordedTime = currentTime;
+    //     const diff = currentTime - startTime;
+    //     scores.push({ time: diff, score: score });
+    // }
+    // moveTillNow++;
+    // if (moveTillNow % 50 === 0) {
+    //     scores.push({ move: moveTillNow, score: score });
+    // }
     display();
 }
 
 function multiAI() {
-    // [mat, score, _] = maximize(mat.slice(0), score, 5);
-    const move = nextMove(mat, 4, score, 5);
+    const move = window[algorithm](mat, 4, score, depth, alpha, beta);
     if (move !== null) {
         [mat, _, score] = callMove(move, mat.slice(0), score);
     }
@@ -330,24 +397,30 @@ function multiAI() {
         st.innerHTML = "Game Over For AI";
         spn.innerHTML = score;
         console.log(id);
-        if (count < 10) {
+        if (count < 3) {
             count++;
             scores.push(score);
             start();
         } else {
+            console.log(scores);
             clearInterval(id);
         }
     } else {
-        generateNewValue();
+        if (totalEmptyCells(mat, 4) !== 0) {
+            generateNewValue();
+        }
     }
     display();
 }
 
+function random() {
+    return Math.floor(Math.random() * 4);
+}
 
 var spn = document.getElementById("test-span");
 var st = document.getElementById("status");
-start();
-alert(scores);
+// start();
+// display();
 
-var retry = document.getElementById("retry");
-retry.addEventListener('click', start);
+var run = document.getElementById("start");
+run.addEventListener('click', start);

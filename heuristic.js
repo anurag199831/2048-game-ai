@@ -5,7 +5,6 @@ function patternHeuristics(grid) {
     for (let idx = 0; idx < grid.length; idx++) {
         ret += grid[idx] * weights[idx];
     }
-    // alert("pattern : " + ret);
     return ret;
 }
 
@@ -50,14 +49,6 @@ function utility(grid, gridSize) {
     const pattern = patternHeuristics(grid.slice(0), gridSize);
     const cluster = clusterHeuristics(grid.slice(0), gridSize);
     const monotonic = monotonicHeuristics(grid.slice(0), gridSize);
-    return pattern - cluster + monotonic;
-    // return -1 * cluster;
+    // return pattern - cluster + monotonic;
+    return -1 * cluster;
 }
-
-// function sumArray(array) {
-//     let sum = 0;
-//     for (const num of array) {
-//         sum += num;
-//     }
-//     return sum;
-// }
